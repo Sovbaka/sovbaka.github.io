@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математика</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .section, .subsection {
+            margin-bottom: 20px;
+        }
+        .toggle {
+            cursor: pointer;
+            font-weight: normal;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .hidden {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    padding: 0;
+}
+
+.visible {
+    max-height: 5000px; /* Достаточно большое значение для текста */
+    opacity: 1;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    padding: 10px; /* Добавляем внутренний отступ */
+    border: 1px solid #ddd; /* Опционально для визуального оформления */
+    background: #f9f9f9;
+}
+
+.answer-text {
+        display: inline-block;
+        cursor: pointer;
+        color: black;
+        transition: color 0s, transform 0.3s;
+    }
+    .answer-text:hover {
+        color: darkblue;
+    }
+    .answer-text.revealed {
+        color: black;
+        font-weight: bold;
+        transition:  color 0.5s;
+    }
+
+    .toggle[data-underline="true"]:hover {
+        text-decoration: underline;
+    }
+
+    .toggle {
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    </style>
+</head>
+<body>
+    <div class="subsection">
+        <h2>Математика</h2>
+
+        <div>
+            <div class="toggle" onclick="toggleContent('item1')" data-underline="true">
+                <b>1.</b> Сколько решений может иметь система из \(n\) независимых уравнений с \(n\) неизвестными? Что возможно сделать, имея систему из \(n\) уравнений с \(n+1\) неизвестным, когда ответом на вопрос задачи является отношение линейных комбинаций неизвестных типа \(p=\frac{a-c}{b+d}\) или \(k=\frac{I_1}{I_2+I_1}\)?
+            </div>
+            <div id="item1" class="hidden">
+                На рынке хлеба и зрелищ в стране Р. работают два типа фирм, издержки у тех и у 
+                других задаются функцией вида \(TC_i=a_iQ^2+bQ_i+c_i\). Все фирмы воспринимают цену как заданную. 
+                Про спрос и предложение на рынке известно следующее:
+
+
+                \[Q_D=40-P\qquad\qquad Q_S=\begin{cases}***,\ &*** < P < ***\\ 3P-35,\ &P\geqslant ***\end{cases}
+                \]
+
+                Пока главный экономист был в отпуске, король издал следующий указ:
+
+                <div style="text-align: center;">
+    <i>В целях помощи фирмам, которым сложно выходить на рынок, сим постановляю возмещать в полном размере величину
+         фиксированных издержек фирмам, которые по той или иной причине производят \(Q=0\)</i>
+        </div>
+        <div style="height: 20px;"></div>
+
+Когда главный экономист узнал о принятии такого закона, он прибежал в кабинет монарха и воскликнул:
+
+
+<p>&mdash;Что вы наделали! Ведь может оказаться, что у нас в стране не останется хлеба и зрелищ! --На это король ответил:</p>
+<p>&mdash;Да, ошибся маленько, но ничего страшного, равновесное количество упало, но не до нуля.</p>
+<p>&mdash;Ну, сокращение потребления на... На \(x\%\) &mdash; это тоже очень серьезно, знаете ли! --ответил министр</p>
+
+
+В момент данного разговора, главный экономист еще не мог наблюдать, что случилось на рынке. Он только держал в голове 
+информацию о первоначальных функциях спроса и предложения (часть которой скрыта от вас). Восстановите значение, которое 
+скрыто символом \(x\).
+
+<div style="height: 5x;"></div>
+        <span class="answer-text" onclick="showAnswer(this, 'Ответ: \\(x=20\\)')">
+            Показать ответ
+        </span>
+
+
+            </div>
+        </div>
+
+        <div>
+            <div class="toggle">
+                <b>2.</b> Уравнение прямой по двум точкам (формула).
+            </div>
+            
+        </div>
+
+        <div>
+            <div class="toggle" onclick="toggleContent('item3')">
+                <b>3.</b> Вершина параболы, формула. Значение целевой функции -- параболы -- при подстановке \(x=x^*\). Нахождение вершины параболы как середины между корнями для случаев типа \(T=t(12-2t)\).
+            </div>
+            <div id="item3" class="hidden">
+                <!-- Здесь можно добавить дополнительный текст -->
+            </div>
+        </div>
+
+        <div>
+            <div class="toggle" onclick="toggleContent('item4')">
+                <b>4.</b> Неравенство Коши для поиска минимума функций вида \(y=ax+\frac{b}{x}\). Как оформлять такое решение в формате оценка + достижимость оценки? Нахождение точек экстремума функции \(x-\frac{x}{4-2x}\) без использования производной.
+            </div>
+            <div id="item4" class="hidden">
+                <!-- Здесь можно добавить дополнительный текст -->
+            </div>
+        </div>
+
+        <div>
+            <div class="toggle" onclick="toggleContent('item5')">
+                <b>5.</b> Нахождение производной. Производная произведения, частного, производная сложной функции. Производная \(\sqrt{x}, \sqrt{a-x}\).
+            </div>
+            <div id="item5" class="hidden">
+                <!-- Здесь можно добавить дополнительный текст -->
+            </div>
+        </div>
+
+        <!-- Продолжайте добавлять пункты аналогично -->
+
+    </div>
+
+    <script>
+        function toggleContent(id) {
+    const element = document.getElementById(id);
+    if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+        element.classList.add('visible');
+    } else {
+        element.classList.remove('visible');
+        element.classList.add('hidden');
+    }
+}
+        function showAnswer(element, answer) {
+    element.classList.add('revealed');
+    element.innerHTML = answer; // Используем innerHTML, чтобы поддерживать LaTeX
+    MathJax.typeset([element]); // Обрабатываем изменённый элемент
+}
+    </script>
+</body>
+</html>
