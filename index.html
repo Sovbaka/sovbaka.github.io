@@ -79,7 +79,7 @@
                 налог в размере 5 денежных единиц. Налоговое бремя разделилось в отношение 2 к 3 между
                 покупателями и продавцами. Найдите равновесную цену до введения налога.
                 <div style="height: 5px;"></div>
-                <span class="answer-text" onclick="showAnswer(this, 'Ответ: \\(p=5\\)')">
+                <span class="answer-text" onclick="showAnswer(this, 'Ответ: \\(p=?\\)')">
                     Показать ответ
                 </span>
                 <div style="height: 40px;"></div>
@@ -394,7 +394,62 @@
                 <b>1.</b> Структура издержек фирмы. Стандартный вид издержек. Рентабельность.
             </div>
             <div id="item29" class="hidden">
-                <!-- Здесь можно добавить дополнительный текст -->
+                <b>Задача 1</b><br>
+                Данные об издержках совершенно конкурентной фирмы представлены графически:
+                <canvas id="graphCanvas" width="600" height="400" style="border:1px solid black;"></canvas>
+
+    <script>
+        const canvas = document.getElementById("graphCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Draw axes
+        ctx.beginPath();
+        ctx.moveTo(50, 350); // Y-axis starts
+        ctx.lineTo(50, 50); // Y-axis ends
+        ctx.lineTo(40, 60); // Arrow for Y-axis
+        ctx.moveTo(50, 50);
+        ctx.lineTo(60, 60);
+        ctx.moveTo(50, 350);
+        ctx.lineTo(550, 350); // X-axis starts
+        ctx.lineTo(540, 340); // Arrow for X-axis
+        ctx.moveTo(550, 350);
+        ctx.lineTo(540, 360);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Add labels
+        ctx.font = "18px Arial";
+        ctx.fillText("TC", 14, 60); // Label for Y-axis
+        ctx.fillText("Q", 540, 375); // Label for X-axis
+
+        // Draw curve (example of a quadratic curve for total cost)
+        ctx.beginPath();
+        ctx.moveTo(50, 350); // Start at origin
+        for (let x = 0; x <= 500; x += 1) {
+            let y = 285 - 0.001 * Math.pow(x, 2); // Quadratic curve: -x^2
+            if (y < 50) break; // Stop at the canvas edge
+            ctx.lineTo(50 + x, y);
+        }
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Draw point and label q
+        ctx.beginPath();
+        ctx.arc(400, 350, 5, 0, 2 * Math.PI); // Example point on the curve
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.font = "20px Arial";
+        ctx.fillText("q", 390, 370);
+
+    </script>
+<div style="height: 10px;"></div>
+Такая функция издержек не позволяет фирме получать положительную экономическую
+прибыль в краткосрочном периоде. При текущем выпуске \(Q = q\) рентабельность (отношение
+прибыли к издержкам) фирмы составляет \(-50\%\).<br>
+а) Найдите с помощью графика объем производства, минимизирующий убытки фирмы.<br>
+б) Стоит ли фирме оставаться в отрасли?
             </div>
         </div>
     
@@ -412,7 +467,7 @@
                 <b>3.</b> Условие \(P > AVC_{\min}\). Условие \(\pi_{\max} > -FC\). Нахождение предложения для кубической функции издержек, графически и аналитически.
             </div>
             <div id="item31" class="hidden">
-                <!-- Здесь можно добавить дополнительный текст -->
+                
             </div>
         </div>
     
