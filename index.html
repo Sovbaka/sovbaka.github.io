@@ -68,6 +68,16 @@
         cursor: pointer;
         margin-bottom: 10px;
     }
+    .custom-link {
+    text-decoration: underline;
+    color: inherit; /* Наследует цвет текста, убирая синий */
+    cursor: pointer; /* Меняет курсор на указатель */
+    transition: color 0.1s ease-in-out;
+  }
+  
+  .custom-link:hover {
+    color: gray; /* Изменяет цвет при наведении */
+  }
     </style>
 </head>
 <body>
@@ -691,7 +701,7 @@ p_XX+p_YY=I
         </div>
     </div>
     <div class="content">
-        <h2>Производство и издержки (см. подробнее <a href="Шпаргалка_по_производству_.pdf" target="_blank">здесь</a>)</h2>
+        <h2>Производство и издержки (см. подробнее <a href="Шпаргалка_по_производству_.pdf" target="_blank" class = "custom-link">здесь</a>)</h2>
     
         <div>
             <div class="toggle" onclick="toggleContent('item36')">
