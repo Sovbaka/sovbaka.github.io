@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Прототип: задания с Desmos</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=b277c100591640c2a326153a52f67baa"></script>
+  <style>
+    body { margin:0; font-family: system-ui, sans-serif; background:#0b0f14; color:#e7eef6; }
+    .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    header { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    header h1 { font-size: 20px; margin:0; }
+    select, input, button { background:#121821; color:#e7eef6; border:1px solid #1f2a37; border-radius:12px; padding:10px 12px; font-size:14px; }
+    button { cursor:pointer; }
+    .card { background:#121821; border:1px solid #1f2a37; border-radius:16px; padding:16px; margin-bottom:16px; }
+    .task { font-size:18px; line-height:1.6; }
+    .hint { color:#8aa0b6; }
+    .feedback { font-weight:600; }
+    .ok { color:#30c48c; }
+    .bad { color:#ff6b6b; }
+
+    /* Горизонтальный список задач */
+    .tasklist { display:flex; gap:8px; overflow-x:auto; padding:4px; scrollbar-width:thin; }
+    .task-btn { flex:0 0 auto; min-width:44px; height:40px; border-radius:12px; border:1px solid #1f2a37; background:#121821; color:#e7eef6; cursor:pointer; font-weight:600; }
+    .task-btn[aria-selected="true"] { outline:2px solid #3aa0ff; border-color:#3aa0ff; }
+    .task-btn.solved { background:#1c3525; border-color:#30c48c; color:#30c48c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Использование инстурментов Desmos</h1>
+    </header>
+
+    <section class="card" style="padding:12px 8px;">
+      <div class="tasklist" id="taskList" role="tablist" aria-label="Список задач"></div>
+    </section>
+
+    <section class="card">
+      <div id="taskText" class="task"></div>
+      <button id="hintBtn" type="button">Показать подсказку</button>
+      <span id="hintText" class="hint"></span>
+    </section>
+
+    <section class="card">
+      <div id="calculator" style="width:100%; height:430px; border-radius:14px; background:#0a0f14;"></div>
+    </section>
+
+    <section class="card">
+      <label for="answerInput">Ответ (число):</label>
+      <input id="answerInput" type="number" step="any" />
+      <button id="checkBtn" type="button">Проверить</button>
+      <span id="feedback" class="feedback"></span>
+    </section>
+  </div>
+
+  <script>
+   const TASKS = [
+  {
+    latex: 'Найти  \\(\\dfrac{f\'(\\pi/2)}{\\pi}\\), если   \\(f(x)=\\sin(x)x^2\\)',
+    answer: 1,                   
+    tolerance: 1e-6,              
+    hints: [
+      'В Desmos можно определить функцию выражением \\(f(x)=\\ldots\\)',
+      'Подсказка 2'
+    ]
+  },
+  {
+    latex: 'Чему равен натуральный коэффициент \\(b\\) у функции \\(y=1-x+\\dfrac{x^2}{b}\\), если она является верхней огибающей семейства кривых \\(y=1-a^2-x(1-a)\\)?',
+    answer: 4,
+    tolerance: 1e-6,
+    hints: ['Нет подсказок']
+  },
+  {
+    latex: 'Найдите все значения параметра a, при каждом из которых система неравенств  $$\\begin{cases}\nx^2 + y^2 - a^2 \\leqslant 2x - 4y - 5, \\\\\nx^2 + y^2 - 9a^2 \\leqslant 8y - 14x - 61 + 12a\n\\end{cases}$$  имеет ровно одно решение. В ответ запишите сумму значений.'
+,
+    answer: -1,
+    tolerance: 1e-6,
+    hints: ['Нет подсказок']
+  },
+  {
+    latex: 'Найдите число натуральных значений x, при которых значение выражения \\(\\dfrac{x\\sin(x)}{1.01^x}\\) больше 20.'
+,
+    answer: 61,
+    tolerance: 1e-6,
+    hints: ['Определите достаточно длинный список, например, L=[1,2...500] и с помощью list comprehansion выберете только подходящие значения', 
+  'Например, [L[i] for i=L[f(L)>20]], где f – наша функция, L – большой список.']
+  },
+  {
+    latex: 'Какое максимальное число общих точек с графиком функции \\(x\\sin(x)\\) может иметь отрезок касательной к этой функции длины 9, который делится точкой касания пополам и имеет координату точки касания \\(x_0\\in[3, 6]\\)?'
+,
+    answer: 5,
+    tolerance: 1e-6,
+    hints: ['Используйте уравнение касательной \\(g(x)=f\'(a)(x-a)+f(a)\\)', 'Ограничьте длину отрезка касательной условием в фигурных скобках.', 'Используйте условие \\((x-a)^2+(g(x)-g(a))^2\\leqslant 81\\).']
+  }
+];
+
+    const els = {
+      taskList: document.getElementById('taskList'),
+      text: document.getElementById('taskText'),
+      hintBtn: document.getElementById('hintBtn'),
+      hintText: document.getElementById('hintText'),
+      input: document.getElementById('answerInput'),
+      check: document.getElementById('checkBtn'),
+      feedback: document.getElementById('feedback'),
+      calc: document.getElementById('calculator')
+    };
+
+    let currentIndex = 0;
+    let hintIndex = 0;
+    let calculator;
+
+    function renderAllMath(el){
+      if (window.renderMathInElement){
+        renderMathInElement(el, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false},
+            {left: "\\[", right: "\\]", display: true}
+          ]
+        });
+      }
+    }
+
+    function buildTaskButtons(){
+      els.taskList.innerHTML='';
+      TASKS.forEach((_,i)=>{
+        const b=document.createElement('button');
+        b.className='task-btn';
+        b.type='button';
+        b.setAttribute('role','tab');
+        b.setAttribute('aria-selected', i===currentIndex ? 'true':'false');
+        b.textContent=String(i+1);
+        b.addEventListener('click',()=>{
+          renderTask(i);
+          [...els.taskList.children].forEach((x,idx)=>x.setAttribute('aria-selected', idx===i?'true':'false'));
+        });
+        els.taskList.appendChild(b);
+      });
+    }
+
+    function renderTask(index){
+      currentIndex=index;
+      hintIndex=0;
+      els.hintText.textContent='';
+      els.input.value='';
+      els.feedback.textContent='';
+      els.text.innerHTML=TASKS[index].latex;
+      renderAllMath(els.text);
+
+      els.calc.innerHTML='';
+      calculator = Desmos.GraphingCalculator(els.calc, { expressions:true, keypad:true, zoomButtons:true });
+    }
+
+    function showNextHint(){
+      const t=TASKS[currentIndex];
+      if(!t.hints) return;
+      const h=t.hints[Math.min(hintIndex,t.hints.length-1)];
+      els.hintText.textContent=h;
+      renderAllMath(els.hintText);
+      if(hintIndex<t.hints.length-1) hintIndex++;
+    }
+
+    function checkAnswer(){
+      const t=TASKS[currentIndex];
+      const val=parseFloat(els.input.value.replace(',','.'));
+      if(Number.isNaN(val)){
+        els.feedback.textContent='Введите число';
+        els.feedback.className='feedback bad';
+        return;
+      }
+      const ok=Math.abs(val-t.answer)<= (t.tolerance||1e-6);
+      els.feedback.textContent= ok? 'Верно':'Неверно';
+      els.feedback.className='feedback ' + (ok? 'ok':'bad');
+      if(ok){
+        const btn=els.taskList.children[currentIndex];
+        if(btn) btn.classList.add('solved');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      buildTaskButtons();
+      renderTask(0);
+      els.hintBtn.addEventListener('click',showNextHint);
+      els.check.addEventListener('click',checkAnswer);
+    });
+  </script>
+</body>
+</html>
