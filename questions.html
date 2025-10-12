@@ -129,47 +129,7 @@
         <button onclick="toggleMode()">Режим: <span id="mode-text">Редактирование</span></button>
     </div>
 
-    <div id="config-modal" class="modal" style="display: block;">
-        <div class="modal-content">
-            <h2>Настройка Firebase</h2>
-            <div class="config-section">
-                <p>Для работы сайта нужно настроить Firebase:</p>
-                <ol>
-                    <li>Зайдите на <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a></li>
-                    <li>Создайте новый проект</li>
-                    <li>Добавьте Web приложение</li>
-                    <li>Включите Realtime Database (в режиме test mode для начала)</li>
-                    <li>Скопируйте конфиг и вставьте ниже:</li>
-                </ol>
-                
-                <label>API Key:</label>
-                <input type="text" id="apiKey" placeholder="AIza...">
-                
-                <label>Auth Domain:</label>
-                <input type="text" id="authDomain" placeholder="your-project.firebaseapp.com">
-                
-                <label>Database URL:</label>
-                <input type="text" id="databaseURL" placeholder="https://your-project.firebaseio.com">
-                
-                <label>Project ID:</label>
-                <input type="text" id="projectId" placeholder="your-project">
-                
-                <label>Storage Bucket:</label>
-                <input type="text" id="storageBucket" placeholder="your-project.appspot.com">
-                
-                <label>Messaging Sender ID:</label>
-                <input type="text" id="messagingSenderId" placeholder="123456789">
-                
-                <label>App ID:</label>
-                <input type="text" id="appId" placeholder="1:123456789:web:abc123">
-                
-                <button onclick="initFirebase()">Подключиться к Firebase</button>
-                <button onclick="useLocalMode()">Использовать без Firebase (локальный режим)</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="content"></div>
+    <div id="content"><div class="loading">Загрузка...</div></div>
 
     <div id="modal" class="modal">
         <div class="modal-content">
@@ -195,7 +155,17 @@
         let isEditMode = true;
         let editingKey = null;
         let database = null;
-        let useFirebase = false;
+        
+        // Конфигурация Firebase - замените на свою!
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAnPjFE2yhHcnOoaVo7Q0RJ1hA-F4GEDc",
+            authDomain: "some-questions-econ.firebaseapp.com",
+            databaseURL: "https://some-questions-econ-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "some-questions-econ",
+            storageBucket: "some-questions-econ.firebasestorage.app",
+            messagingSenderId: "367035246315",
+            appId: "1:367035246315:web:3f66c9dcf58756e86080ae"
+        };
         
         let localData = {
             good: [
@@ -220,6 +190,37 @@
                 }
             ]
         };
+
+        // Инициализация Firebase при загрузке
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            
+            console.log('Firebase initialized');
+            
+            // Слушаем изменения в базе
+            database.ref('questions').on('value', (snapshot) => {
+                console.log('Data received from Firebase');
+                const data = snapshot.val();
+                if (data) {
+                    localData = data;
+                    render();
+                } else {
+                    console.log('Database empty, uploading initial data');
+                    // Если база пустая, загружаем начальные данные
+                    database.ref('questions').set(localData).then(() => {
+                        console.log('Initial data uploaded');
+                        render();
+                    });
+                }
+            }, (error) => {
+                console.error('Firebase read error:', error);
+                document.getElementById('content').innerHTML = '<div class="error">Ошибка чтения из Firebase: ' + error.message + '. Проверьте правила доступа в Firebase Console.</div>';
+            });
+        } catch (error) {
+            console.error('Firebase init error:', error);
+            document.getElementById('content').innerHTML = '<div class="error">Ошибка подключения к Firebase: ' + error.message + '</div>';
+        }
 
         function initFirebase() {
             const config = {
@@ -368,7 +369,7 @@
                 localData[cat][idx] = { question, answer, modelAnswer };
             }
 
-            if (useFirebase && database) {
+            if (database) {
                 database.ref('questions').set(localData);
             }
 
@@ -380,11 +381,11 @@
             if (confirm('Удалить этот вопрос?')) {
                 localData[category].splice(index, 1);
                 
-                if (useFirebase && database) {
+                if (database) {
                     database.ref('questions').set(localData);
+                } else {
+                    render();
                 }
-                
-                render();
             }
         }
 
