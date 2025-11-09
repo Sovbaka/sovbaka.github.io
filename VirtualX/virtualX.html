@@ -355,6 +355,12 @@ XX века – астроном князь Б.Б. Голицын, филоло�
 
     let current = 0;
 
+  const images = scenes.map(s => s.img);
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+
     scenes.forEach((s, i) => {
       const b = document.createElement('button');
       b.textContent = i + 1;
