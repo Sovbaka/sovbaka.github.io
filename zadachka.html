@@ -9,6 +9,15 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* сброс first-letter везде — никакого drop cap через CSS */
+    p::first-letter {
+      font-size: inherit;
+      float: none;
+      font-weight: inherit;
+      font-family: inherit;
+      color: inherit;
+    }
+
     :root {
       --ink: #1c1209;
       --ink-soft: #3d3022;
@@ -72,18 +81,18 @@
 
     .byline span { margin: 0 0.6em; }
 
-    .drop-cap::first-letter {
+    p { margin-bottom: 1.2rem; }
+
+    .drop-initial {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
-      font-size: 2.8em;
+      font-size: 2.9em;
       line-height: 0.82;
       float: left;
       margin-right: 0.08em;
       margin-top: 0.1em;
       color: var(--ink);
     }
-
-    p { margin-bottom: 1.2rem; }
 
     .task-box {
       border: 1.5px solid var(--ink-soft);
@@ -124,7 +133,6 @@
       line-height: 1.65;
     }
 
-    /* ── Screenshots: одно под другим ── */
     .screenshots {
       display: flex;
       flex-direction: column;
@@ -145,10 +153,12 @@
     }
 
     .solution-label {
-      font-size: 0.62rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.75rem;
+      font-weight: 700;
       letter-spacing: 0.25em;
       text-transform: uppercase;
-      color: var(--ink-muted);
+      color: var(--ink);
       margin-bottom: 1rem;
     }
 
@@ -190,7 +200,7 @@
 <div class="page">
 
   <div class="kicker">
-    Математика <span>&bull;</span> Экономика <span>&bull;</span> Олимпиады
+    ЛМШ <span>&bull;</span> Экономика <span>&bull;</span> Нейросеточки
   </div>
 
   <h1>Задача по экономике, которая сбивает с толку нейросети</h1>
@@ -198,10 +208,10 @@
   <hr class="title-rule">
 
   <div class="byline">
-    Максим Денисов <span>&bull;</span> ЛМШ, письменное собеседование
+    Максим Денисов <span>&bull;</span> ЛМШ
   </div>
 
-  <p class="drop-cap">Вашему вниманию задача по экономике, которая предлагалась на письменном этапе дистанционного собеседования в ЛМШ в этом году. Прежде чем читать дальше, честно подумайте и дайте на неё ответ.</p>
+  <p><span class="drop-initial">В</span>ашему вниманию задача по экономике, которая предлагалась на письменном этапе дистанционного собеседования в ЛМШ в этом году. Прежде чем читать дальше, честно подумайте и дайте на неё ответ.</p>
 
   <div class="task-box">
     <span class="task-label">Задача</span>
@@ -215,15 +225,14 @@
 
   <p>Ответили? Вот что пишут по этому поводу популярные нейросети — как без thinking-режима, так и с включённым:</p>
 
-  <!-- Замени URL_КАРТИНКИ_1 и URL_КАРТИНКИ_2 на свои ссылки -->
   <div class="screenshots">
-    <img src="https://optim.tildacdn.com/tild3836-6139-4863-b265-373232326363/-/cover/655x478/center/center/-/format/webp/annotely_image.png.webp">
-    <img src="https://optim.tildacdn.com/tild3031-3262-4462-a137-666539646138/-/resize/484x/-/format/webp/annotely_image_1.png.webp">
-  </div>
+    <img src="photo/screenshot1.png">
+    <img src="photo/screenshot2.png">
+</div>
 
   <div class="solution-box">
     <div class="solution-label">Правильное решение</div>
-    <p>Утверждение <strong>неверно</strong>, и потребление сигарет у людей с хорошим здоровьем может вырасти. Действительно, из условия следует, что после раскрытия информации об издержках здоровья обе группы сокращают <em>спрос</em> на сигареты. Однако дело в том, что снижение спроса людей с плохим здоровьем может привести к сильному падению равновесной цены сигарет.</p>
+    <p>Данное утверждение <span style="color: var(--accent);">неверно</span>, и потребление сигарет у людей с хорошим здоровьем может вырасти. Действительно, из условия следует, что после раскрытия информации об издержках здоровья обе группы сокращают <em>спрос</em> на сигареты. Однако дело в том, что снижение спроса людей с плохим здоровьем может привести к сильному падению равновесной цены сигарет.</p>
     <p>В таком случае, несмотря на снижение своего спроса, люди с хорошим здоровьем могут начать потреблять больше сигарет, так как те стали значительно дешевле.</p>
     <p>Отметим, что потребление в группе с плохим здоровьем вырасти не могло: в новом равновесии устанавливается единая для всех цена P, а поскольку изначально спрос представителей обеих групп был одинаковым, люди с плохим здоровьем обязательно потребляют меньше, чем люди с хорошим. При этом в обеих группах потребление вырасти, разумеется, не могло.</p>
     <p>Если представить нейросетям это решение, они согласятся с ним и признают свою ошибку. Причина же их ошибок кроется в том, что у задачи есть очевидное неправильное решение и нет ничего, что намекало бы на «второе дно».</p>
