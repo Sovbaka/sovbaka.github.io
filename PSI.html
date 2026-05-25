@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Private Equality Test</title>
+
+<style>
+body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+input, textarea { width: 100%; margin: 8px 0 16px; padding: 8px; }
+button { padding: 10px; cursor: pointer; }
+.block { border: 1px solid #ccc; padding: 16px; margin-bottom: 20px; }
+</style>
+</head>
+
+<body>
+
+<h2>Сравнение имён без раскрытия</h2>
+
+<div class="block">
+<h3>Шаг 1</h3>
+
+<input id="name" placeholder="Имя">
+<input id="secret" placeholder="Секрет (ключ)">
+<button onclick="generateX()">Посчитать X</button>
+
+<textarea id="xOut" readonly></textarea>
+</div>
+
+<div class="block">
+<h3>Шаг 2</h3>
+
+<textarea id="friendX" placeholder="X друга"></textarea>
+<button onclick="computeFinal()">Посчитать итог</button>
+
+<textarea id="finalOut" readonly></textarea>
+</div>
+
+<script>
+
+const P = BigInt("208351617316091241234326746312124448251235562226470491514186331217050270460481");
+
+async function hashToBigInt(str) {
+    const buf = new TextEncoder().encode(str);
+    const h = await crypto.subtle.digest("SHA-256", buf);
+    return BigInt("0x" + [...new Uint8Array(h)]
+        .map(b => b.toString(16).padStart(2,"0")).join(""));
+}
+
+function modPow(base, exp, mod) {
+    let r = 1n;
+    base %= mod;
+    while (exp > 0n) {
+        if (exp & 1n) r = (r * base) % mod;
+        base = (base * base) % mod;
+        exp >>= 1n;
+    }
+    return r;
+}
+
+async function generateX() {
+    const name = document.getElementById("name").value.trim();
+    const secret = document.getElementById("secret").value.trim();
+
+    const h = await hashToBigInt(name);
+    const a = await hashToBigInt(secret);
+
+    const X = modPow(h, a, P);
+
+    document.getElementById("xOut").value = X.toString();
+}
+
+async function computeFinal() {
+    const friendX = BigInt(document.getElementById("friendX").value.trim());
+    const secret = document.getElementById("secret").value.trim();
+
+    const a = await hashToBigInt(secret);
+
+    const result = modPow(friendX, a, P);
+
+    document.getElementById("finalOut").value = result.toString();
+}
+
+</script>
+
+</body>
+</html>
