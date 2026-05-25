@@ -6,33 +6,54 @@
 
 <style>
 body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
-input, textarea { width: 100%; margin: 8px 0 16px; padding: 8px; }
-button { padding: 10px; cursor: pointer; }
+input, textarea { width: 100%; margin: 8px 0 8px; padding: 8px; }
+button { padding: 8px; cursor: pointer; margin-right: 6px; }
 .block { border: 1px solid #ccc; padding: 16px; margin-bottom: 20px; }
+.row { display: flex; gap: 6px; align-items: center; }
+.row input, .row textarea { flex: 1; }
+.smallbtn { white-space: nowrap; }
 </style>
 </head>
 
 <body>
 
-<h2>Сравнение имён без раскрытия</h2>
+<h2>Сравнение имён</h2>
 
 <div class="block">
 <h3>Шаг 1</h3>
 
+<div class="row">
 <input id="name" placeholder="Имя">
-<input id="secret" placeholder="Секрет (ключ)">
+<button class="smallbtn" onclick="copy('name')">копировать</button>
+</div>
+
+<div class="row">
+<input id="secret" placeholder="Секрет">
+<button class="smallbtn" onclick="copy('secret')">копировать</button>
+</div>
+
 <button onclick="generateX()">Посчитать X</button>
 
+<div class="row">
 <textarea id="xOut" readonly></textarea>
+<button class="smallbtn" onclick="copy('xOut')">копировать</button>
+</div>
 </div>
 
 <div class="block">
 <h3>Шаг 2</h3>
 
+<div class="row">
 <textarea id="friendX" placeholder="X друга"></textarea>
+<button class="smallbtn" onclick="copy('friendX')">копировать</button>
+</div>
+
 <button onclick="computeFinal()">Посчитать итог</button>
 
+<div class="row">
 <textarea id="finalOut" readonly></textarea>
+<button class="smallbtn" onclick="copy('finalOut')">копировать</button>
+</div>
 </div>
 
 <script>
@@ -78,6 +99,16 @@ async function computeFinal() {
     const result = modPow(friendX, a, P);
 
     document.getElementById("finalOut").value = result.toString();
+}
+
+async function copy(id) {
+    const el = document.getElementById(id);
+    try {
+        await navigator.clipboard.writeText(el.value);
+    } catch (e) {
+        el.select();
+        document.execCommand("copy");
+    }
 }
 
 </script>
