@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ru"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Компактная интерактивная хронология олимпиадного движения в России и СССР">
+  <title>Олимпиадное движение: предметные линии</title>
+  <style>
+    :root { color-scheme: light; --paper:#f7f4ed; --ink:#1e2730; --muted:#6f7780; --line:#d8d2c7; --accent:#d64b31; --lane-label:104px; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; color:var(--ink); background:var(--paper); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.35; }
+    button,a { font:inherit; }
+    .module { width:min(100%,1120px); margin:0 auto; padding:22px 18px 18px; }
+    .head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:15px; }
+    .eyebrow { margin:0 0 4px; color:var(--accent); font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0; font-family:Georgia,"Times New Roman",serif; font-size:clamp(22px,3vw,31px); font-weight:500; letter-spacing:-.025em; line-height:1.05; }
+    .deck { max-width:470px; margin:0; color:var(--muted); font-size:12px; text-align:right; }
+    .hint-mobile { display:none; margin:0 0 7px; color:var(--muted); font-size:10px; }
+    .timeline-scroll { overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .timeline-canvas { width:100%; min-width:0; padding:8px 0 7px; }
+    .axis,.lane { display:grid; grid-template-columns:var(--lane-label) minmax(0,1fr); }
+    .axis { height:31px; }
+    .axis-label { align-self:end; padding:0 12px 5px 0; color:var(--muted); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+    .axis-plot,.lane-plot { position:relative; margin-inline:14px; }
+    .axis-tick { position:absolute; bottom:4px; left:var(--x); color:var(--muted); font-size:9px; font-variant-numeric:tabular-nums; transform:translateX(-50%); }
+    .axis-tick:first-child { transform:none; }
+    .axis-tick:last-child { transform:translateX(-100%); }
+    .lane { min-height:var(--row-h); border-top:1px solid rgba(216,210,199,.64); transition:opacity .2s; }
+    .lane:first-of-type { border-top-color:var(--line); }
+    .lane.is-muted { opacity:.18; }
+    .lane.is-muted .lane-label { pointer-events:auto; }
+    .lane.is-muted .event { pointer-events:none; }
+    .lane-label-wrap { display:flex; align-items:center; padding-right:12px; }
+    .lane-label { display:flex; align-items:center; gap:7px; width:100%; padding:5px 0; border:0; color:var(--ink); background:transparent; cursor:pointer; font-size:10.5px; font-weight:700; text-align:left; }
+    .lane-label::before { content:""; flex:0 0 auto; width:7px; height:7px; border-radius:50%; background:var(--lane-color); }
+    .lane-label:hover { color:var(--lane-color); }
+    .lane-plot::before { content:""; position:absolute; right:0; bottom:14px; left:0; height:1px; background:var(--line); }
+    .event { position:absolute; z-index:2; bottom:8px; left:var(--x); width:13px; height:13px; padding:0; border:0; color:var(--event-color); background:transparent; cursor:pointer; transform:translateX(-50%); }
+    .dot { position:absolute; bottom:calc(var(--stack,0) * 9px); left:1px; width:11px; height:11px; border:2px solid var(--paper); border-radius:50%; background:var(--event-color); box-shadow:0 0 0 1px color-mix(in srgb,var(--event-color) 60%,transparent); transition:transform .15s; }
+    .event-label { position:absolute; bottom:18px; left:6px; display:block; width:max-content; max-width:120px; color:var(--ink); font-size:9.5px; font-weight:500; line-height:1.08; text-align:center; transform:translateX(-50%); white-space:nowrap; }
+    .event-year { color:var(--event-color); font-size:8.5px; font-variant-numeric:tabular-nums; font-weight:800; }
+    .event.edge-start .event-label { left:1px; text-align:left; transform:none; }
+    .event.edge-end .event-label { left:12px; text-align:right; transform:translateX(-100%); }
+    .event.is-hovered .dot,.event:focus-visible .dot,.event.is-selected .dot { transform:scale(1.55); }
+    .event:focus-visible { outline:2px solid var(--event-color); outline-offset:4px; border-radius:2px; }
+    .event.is-selected .event-label,.event.is-hovered .event-label { color:var(--event-color); }
+    .lane-plot.has-nearest { cursor:pointer; }
+    .detail { display:grid; grid-template-columns:72px minmax(0,1fr) auto; gap:13px; align-items:start; min-height:82px; padding:13px 0 3px; border-bottom:1px solid var(--line); }
+    .detail-year { color:var(--detail-color,var(--accent)); font-family:Georgia,"Times New Roman",serif; font-size:24px; font-weight:600; line-height:1; }
+    .detail-copy h2 { margin:0 0 3px; font-family:Georgia,"Times New Roman",serif; font-size:17px; font-weight:600; line-height:1.1; }
+    .detail-copy p { max-width:720px; margin:0; color:var(--muted); font-size:11px; line-height:1.42; }
+    .detail-source { align-self:center; color:var(--detail-color,var(--accent)); font-size:10px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .detail-source:hover { text-decoration:underline; }
+    .footer-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding-top:8px; color:var(--muted); font-size:9.5px; }
+    .reset { display:none; padding:0; border:0; color:var(--accent); background:transparent; cursor:pointer; font-weight:700; }
+    .reset.visible { display:inline; }
+    .editor { margin-top:10px; border-top:1px solid var(--line); }
+    .editor summary { width:max-content; padding:9px 0 3px; color:var(--accent); cursor:pointer; font-size:10.5px; font-weight:700; }
+    .editor-note { margin:3px 0 9px; color:var(--muted); font-size:10px; }
+    .editor-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
+    .field { display:flex; flex-direction:column; gap:3px; color:var(--muted); font-size:9px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+    .field-wide { grid-column:span 2; }
+    .field-full { grid-column:1/-1; }
+    .field input,.field select,.field textarea { width:100%; min-height:30px; padding:6px 7px; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:#fffdf9; font-size:12px; font-weight:400; letter-spacing:0; text-transform:none; }
+    .field textarea { min-height:58px; resize:vertical; }
+    .editor-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; }
+    .editor-actions button,.import-label { padding:6px 9px; border:1px solid var(--line); border-radius:5px; color:var(--ink); background:transparent; cursor:pointer; font-size:10px; font-weight:700; }
+    .editor-actions .primary { border-color:var(--accent); color:#fff; background:var(--accent); }
+    .editor-actions .danger { color:#a22e22; }
+    .import-label input { display:none; }
+    .editor-status { min-height:16px; margin:6px 0 0; color:var(--muted); font-size:10px; }
+    @media (max-width:760px) { :root{--lane-label:82px}.module{padding:17px 12px 14px}.head{align-items:start}.deck{display:none}.lane-label{font-size:9px}.event-label{font-size:8.5px}.event-year{font-size:8px}.detail{grid-template-columns:62px minmax(0,1fr)}.detail-source{grid-column:2;justify-self:start}.editor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.field-wide,.field-full{grid-column:1/-1}.field input,.field select,.field textarea{font-size:16px} }
+    @media (max-width:520px) { :root{--lane-label:72px}.event-label{font-size:8px}.event-year{font-size:7.5px}.lane-label{font-size:8px}.footer-row span{display:none} }
+    @media print { .module{width:100%;padding:0}.timeline-scroll{overflow:visible}.timeline-canvas{min-width:0}.axis,.lane{grid-template-columns:92px minmax(0,1fr)}.hint-mobile,.footer-row{display:none} }
+  </style>
+</head>
+<body>
+  <section class="module" aria-labelledby="timeline-title">
+    <header class="head">
+      <div><p class="eyebrow">1934–2016</p><h1 id="timeline-title">Как росло олимпиадное движение</h1></div>
+      <p class="deck">Каждая строка — отдельная предметная линия. Нажмите на название предмета, чтобы оставить только его, или на событие, чтобы раскрыть подробности.</p>
+    </header>
+    <div class="timeline-scroll" role="region" aria-label="Горизонтальный таймлайн по предметам" tabindex="0"><div class="timeline-canvas" id="timeline"></div></div>
+    <section class="detail" id="detail" aria-live="polite" style="--detail-color: #c74730;">
+      <div class="detail-year" id="detail-year">1993</div>
+      <div class="detail-copy"><h2 id="detail-title">Турнир Архимеда</h2><p id="detail-text">Московские учителя создают математический турнир для 5–6 классов — ещё один ранний вход в предметное сообщество.</p></div>
+      <a class="detail-source" id="detail-source" href="https://arhimedes.org/" target="_blank" rel="noopener noreferrer">Источник ↗</a>
+    </section>
+    <div class="footer-row"><span>Все точки вычисляются по одной шкале: одинаковый год всегда находится на одной вертикали.</span><button class="reset" id="reset" type="button">Показать все предметы</button></div>
+    <details class="editor" id="editor" open="" hidden="">
+      <summary>Редактор точек</summary>
+      <p class="editor-note">Выберите точку на шкале для правки или нажмите «Новая точка». Изменения сохраняются только в этом браузере; JSON-файл можно перенести на другой компьютер.</p>
+      <form id="editor-form">
+        <div class="editor-grid">
+          <label class="field">Предмет<select id="edit-lane" required=""><option value="math">Математика</option><option value="physics">Физика</option><option value="chemistry">Химия</option><option value="biology">Биология</option><option value="linguistics">Лингвистика</option><option value="informatics">Информатика</option><option value="humanities">Новые предметы</option><option value="system">Система</option></select></label>
+          <label class="field">Год на шкале<input id="edit-year" type="number" min="1934" max="2016" step="1" required=""></label>
+          <label class="field">Год в подписи<input id="edit-date" type="text" maxlength="12" required=""></label>
+          <label class="field field-wide">Короткая подпись<input id="edit-label" type="text" maxlength="40" required=""></label>
+          <label class="field field-wide">Заголовок<input id="edit-title" type="text" maxlength="120" required=""></label>
+          <label class="field field-wide">Ссылка на источник<input id="edit-source" type="url" placeholder="https://…"></label>
+          <label class="field field-full">Описание<textarea id="edit-text" maxlength="800" required=""></textarea></label>
+        </div>
+        <div class="editor-actions">
+          <button class="primary" type="submit">Сохранить точку</button>
+          <button id="new-event" type="button">Новая точка</button>
+          <button class="danger" id="delete-event" type="button">Удалить выбранную</button>
+          <button class="primary" id="export-html" type="button">Скачать готовый HTML</button>
+          <button id="export-events" type="button">Скачать JSON</button>
+          <label class="import-label">Загрузить JSON<input id="import-events" type="file" accept="application/json,.json"></label>
+          <button id="reset-events" type="button">Вернуть исходные данные</button>
+        </div>
+        <p class="editor-status" id="editor-status" role="status">Редактируется: Турнир Архимеда</p>
+      </form>
+    </details>
+  </section>
+
+  <script>
+    const START=1934, END=2016;
+    const tickYears=[1934,1950,1960,1970,1980,1990,2000,2010,2016];
+    const lanes=[
+      {id:"math",name:"Математика",color:"#c74730"},{id:"physics",name:"Физика",color:"#2e688e"},{id:"chemistry",name:"Химия",color:"#956022"},{id:"biology",name:"Биология",color:"#3f7657"},{id:"linguistics",name:"Лингвистика",color:"#8e496d"},{id:"informatics",name:"Информатика",color:"#66539a"},{id:"humanities",name:"Новые предметы",color:"#a44367"},{id:"system",name:"Система",color:"#24445e"}
+    ];
+    const defaultEvents=[{"id":"leningrad-1934","lane":"math","year":1934,"date":"1934","label":"Ленинград","level":0,"edge":"start","title":"Первая устойчивая математическая олимпиада","text":"В Ленинграде проходит первая школьная математическая олимпиада, с которой обычно начинают историю устойчивого олимпиадного движения в России.","source":"https://rosolymp.ru/?id=9906&itemid=6701&option=com_content&view=article"},{"id":"moscow-1935","lane":"math","year":1935,"date":"1935","label":"Москва","level":2,"title":"Московская математическая олимпиада","text":"МГУ и Московское математическое общество создают вторую крупную городскую традицию. Задачи проверяют самостоятельную идею, а не только знание школьной программы.","source":"https://olympiads.mccme.ru/mmo/"},{"id":"imo-1959","lane":"math","year":1959,"date":"1959","label":"Первая IMO","level":2,"title":"Первая Международная математическая олимпиада","text":"Первая IMO проходит в Румынии с участием семи стран, включая СССР. Она становится старейшей международной предметной олимпиадой школьников.","source":"https://www.imo-official.org/about/"},{"id":"russia-math-1961","lane":"math","year":1961,"date":"1961","label":"Всероссийская","level":0,"title":"Всероссийская математическая олимпиада","text":"После пробного соревнования 1960 года начинается официальная нумерация Всероссийской математической олимпиады.","source":"https://rosolymp.ru/?id=9906&itemid=6701&option=com_content&view=article"},{"id":"all-union-math-1967","lane":"math","year":1967,"date":"1967","label":"Всесоюзная","level":1,"title":"Всесоюзная математическая олимпиада","text":"Математика входит в общесоюзную многоступенчатую вертикаль: от школьного и районного этапов до союзного финала.","source":"https://www.kvant.digital/about/history/"},{"id":"towns-1980","lane":"math","year":1980,"date":"1980","label":"Турнир городов","level":0,"title":"Международный Турнир городов","text":"Возникает независимая математическая модель, ориентированная не только на спортивный результат, но и на вдумчивую работу над трудной задачей.","source":"https://www.turgor.ru/"},{"id":"math-festival-1990","lane":"math","year":1990,"date":"1990","label":"Матпраздник","level":0,"title":"Первый «Математический праздник»","text":"Массовый вход в олимпиадную культуру для учеников 6–7 классов: олимпиада дополняется лекциями, играми и событиями для родителей.","source":"https://mccme.ru/matprazdnik/"},{"id":"archimedes-1993","lane":"math","year":1993,"date":"1993","label":"Архимед","level":2,"title":"Турнир Архимеда","text":"Московские учителя создают математический турнир для 5–6 классов — ещё один ранний вход в предметное сообщество.","source":"https://arhimedes.org/"},{"id":"kangaroo-1994","lane":"math","year":1994,"date":"1994","label":"Кенгуру","level":0,"title":"«Кенгуру» приходит в Россию","text":"Международный конкурс запускает массовую модель «математика для всех» с широкой возрастной линейкой.","source":"https://mathkang.ru/"},{"id":"mipt-1962","lane":"physics","year":1962,"date":"1961–62","label":"Олимпиады МФТИ","level":1,"title":"Выездные олимпиады МФТИ","text":"Студенты Физтеха едут по стране искать сильных школьников; вокруг олимпиад формируется сеть заочного обучения.","source":"https://olymp.mipt.ru/"},{"id":"boarding-schools-1963","lane":"physics","year":1963,"date":"1963","label":"Физмат-интернаты","level":0,"title":"Физико-математические школы-интернаты","text":"Олимпиада становится входом в длинную образовательную траекторию: кружок, летняя школа, интернат, университет.","source":"https://internat.msu.ru/about/istoriya/"},{"id":"all-union-physics-1967","lane":"physics","year":1967,"date":"1967","label":"Всесоюзная","level":0,"title":"Всесоюзная олимпиада по физике","text":"Физика входит в единую многоступенчатую систему олимпиад союзного масштаба.","source":"https://www.kvant.digital/about/history/"},{"id":"ipho-1967","lane":"physics","year":1967,"date":"1967","label":"Первая IPhO","level":2,"title":"Первая Международная физическая олимпиада","text":"Первая IPhO проходит в Варшаве с участием пяти стран. Международная и всесоюзная линии физики возникают в одном году.","source":"https://ipho-unofficial.org/timeline/1967/"},{"id":"chemistry-1938","lane":"chemistry","year":1938.5,"date":"1938–39","label":"Москва и Ленинград","level":0,"edge":"start","title":"Первые химические олимпиады","text":"Олимпиадная форма распространяется из математики в естественные науки. Московскую традицию восстановят после войны в 1944 году.","source":"https://www.chem.msu.ru/rus/olimp/"},{"id":"all-union-chemistry-1967","lane":"chemistry","year":1967,"date":"1967","label":"Всесоюзная","level":0,"title":"Всесоюзная олимпиада по химии","text":"Химия вместе с математикой и физикой входит в ядро общесоюзной олимпиадной вертикали.","source":"https://www.chem.msu.ru/rus/olimp/"},{"id":"icho-1968","lane":"chemistry","year":1968,"date":"1968","label":"Первая IChO","level":2,"title":"Первая Международная химическая олимпиада","text":"Первая IChO проходит в Праге: 18 школьников представляют Чехословакию, Польшу и Венгрию.","source":"https://www.icho-official.org/results/results.php?id=1&year=1968"},{"id":"biology-1950","lane":"biology","year":1950,"date":"1950","label":"Москва","level":0,"title":"Московская биологическая олимпиада","text":"Биолого-почвенный факультет МГУ начинает постоянную олимпиаду для школьников.","source":"https://mbo.bio.msu.ru/"},{"id":"biology-1979","lane":"biology","year":1979,"date":"1979","label":"Всероссийская","level":0,"title":"Первая Всероссийская олимпиада по биологии","text":"Биология заметно позже физико-математических предметов получает общероссийскую вертикаль.","source":"https://vserosolimp.edsoo.ru/"},{"id":"biology-1990","lane":"biology","year":1990,"date":"1990","label":"Всесоюзная","level":0,"title":"Первая Всесоюзная олимпиада по биологии","text":"Общесоюзный финал по биологии появляется лишь в последний полный год существования СССР.","source":"https://vserosolimp.edsoo.ru/"},{"id":"ibo-1990","lane":"biology","year":1990,"date":"1990","label":"Первая IBO","level":2,"title":"Первая Международная биологическая олимпиада","text":"Первая IBO проходит в Оломоуце, Чехословакия: шесть стран и 22 участника.","source":"https://www.ibo-info.org/en/contest/past-ibos.html"},{"id":"linguistics-1965","lane":"linguistics","year":1965,"date":"1965","label":"Языковедение + математика","level":0,"title":"Олимпиада по языковедению и математике","text":"МГУ создаёт соревнование по предмету, которого нет в школьной программе: участники ищут закономерности в неизвестных языках.","source":"https://lingling.ru/"},{"id":"iol-2003","lane":"linguistics","year":2003,"date":"2003","label":"Первая IOL","level":0,"title":"Первая Международная лингвистическая олимпиада","text":"Первая IOL проходит в Боровце, Болгария. В ней участвуют 33 школьника из шести стран; российские команды представляют Москву и Санкт-Петербург.","source":"https://ioling.org/history/"},{"id":"informatics-1988","lane":"informatics","year":1988,"date":"1988","label":"Свердловск","level":0,"title":"Первая Всесоюзная олимпиада по информатике","text":"Новая школьная дисциплина быстро входит в готовую олимпиадную инфраструктуру; в финале участвуют 80 школьников из союзных республик.","source":"https://kvant.mccme.ru/1988/index.htm"},{"id":"ioi-1989","lane":"informatics","year":1989,"date":"1989","label":"Первая IOI","level":2,"title":"Первая Международная олимпиада по информатике","text":"Первая IOI проходит в Правеце, Болгария, по инициативе и при поддержке ЮНЕСКО.","source":"https://ioinformatics.org/page/ioi-1989/15"},{"id":"ecology-1994","lane":"humanities","year":1994,"date":"1994","label":"Экология","level":0,"title":"Всероссийская олимпиада по экологии","text":"Экология становится одним из первых новых предметов постсоветского расширения олимпиадной системы.","source":"https://vserosolimp.edsoo.ru/"},{"id":"literature-1995","lane":"humanities","year":1995,"date":"1995","label":"Литература","level":0,"title":"Первая Всероссийская олимпиада по литературе","text":"Олимпиадный формат адаптируют к анализу текста, литературоведческой работе и творческим заданиям.","source":"https://olimpiada.ru/activity/84"},{"id":"russian-1996","lane":"humanities","year":1996,"date":"1996","label":"Русский язык","level":0,"title":"Первая Всероссийская олимпиада по русскому языку","text":"Первый финал проходит в Курске; организаторы постепенно выстраивают письменный и устный форматы филологической олимпиады.","source":"https://vserosolimp.edsoo.ru/"},{"id":"economics-1996","lane":"humanities","year":1996,"date":"1996","label":"Экономика","level":0,"title":"Всероссийская олимпиада по экономике","text":"Новый школьный предмет, новые университетские программы и новая олимпиада возникают почти одновременно.","source":"https://vserosolimp.edsoo.ru/"},{"id":"english-1998","lane":"humanities","year":1998,"date":"1998","label":"Английский","level":0,"title":"Первая Всероссийская олимпиада по английскому языку","text":"Первый финал проходит в Смоленске; формат объединяет чтение, аудирование, письмо и устную речь.","source":"https://vserosolimp.edsoo.ru/"},{"id":"history-2000","lane":"humanities","year":2000,"date":"2000","label":"История","level":2,"title":"Первая Всероссийская олимпиада по истории","text":"Государственная система заметно расширяется за пределы естественных наук.","source":"https://vserosolimp.edsoo.ru/"},{"id":"german-2000","lane":"humanities","year":2000,"date":"2000","label":"Немецкий","level":0,"title":"Всероссийская олимпиада по немецкому языку","text":"Немецкий язык входит в быстро растущую государственную систему олимпиад по современным иностранным языкам.","source":"https://vserosolimp.edsoo.ru/"},{"id":"technology-2000","lane":"humanities","year":2000,"date":"2000","label":"Технология","level":0,"title":"Первая Всероссийская олимпиада по технологии","text":"Первый финал проходит в Брянске; соревнование включает теорию и защиту практического проекта.","source":"https://vserosolimp.edsoo.ru/"},{"id":"physical-culture-2000","lane":"humanities","year":2000,"date":"2000","label":"Физкультура","level":0,"title":"Всероссийская олимпиада по физической культуре","text":"Олимпиадная модель распространяется на предмет, где теоретическая часть сочетается с практическими испытаниями.","source":"https://vserosolimp.edsoo.ru/"},{"id":"social-studies-2001","lane":"humanities","year":2001,"date":"2001","label":"Обществознание","level":0,"title":"Первая Всероссийская олимпиада по обществознанию","text":"Первый финал проходит в Кирове. Вторая олимпиада состоится лишь в 2005 году.","source":"https://vserosolimp.edsoo.ru/"},{"id":"french-2002","lane":"humanities","year":2002,"date":"2002","label":"Французский","level":0,"title":"Всероссийская олимпиада по французскому языку","text":"Французский язык продолжает расширение государственной линии олимпиад по иностранным языкам.","source":"https://vserosolimp.edsoo.ru/"},{"id":"law-2003","lane":"humanities","year":2003,"date":"2003","label":"Право","level":0,"title":"Всероссийская олимпиада по праву","text":"Право становится отдельным предметом Всероссийской олимпиады школьников.","source":"https://olimpiada.ru/activity/87"},{"id":"central-committee-1974","lane":"system","year":1974,"date":"1974","label":"Единая модель","level":0,"title":"Единая организационная модель","text":"Центральный оргкомитет закрепляет устойчивую многоступенчатую олимпиадную вертикаль.","source":"https://rosolymp.ru/?id=9906&itemid=6701&option=com_content&view=article"},{"id":"russian-system-1992","lane":"system","year":1992.5,"date":"1992–93","label":"Российская ВсОШ","level":0,"title":"Самостоятельная российская ВсОШ","text":"После распада СССР формируется новый российский заключительный этап и собственная федеральная система.","source":"https://vserosolimp.edsoo.ru/"},{"id":"list-2008","lane":"system","year":2008,"date":"2008","label":"Перечень","level":0,"title":"Первый Перечень олимпиад нового типа","text":"Государство формализует уровни вузовских олимпиад и связанные с ними льготы при поступлении.","source":"https://normativ.kontur.ru/document/1/129748"},{"id":"education-law-2012","lane":"system","year":2012,"date":"2012","label":"Льготы в законе","level":2,"title":"Особые права закреплены законом","text":"Закон об образовании закрепляет особые права победителей и призёров ВсОШ и олимпиад школьников.","source":"https://www.consultant.ru/document/cons_doc_LAW_140174/"},{"id":"grade-four-2016","lane":"system","year":2016,"date":"2016","label":"4-й класс во ВсОШ","level":0,"edge":"end","title":"Четвёртый класс входит во ВсОШ","text":"Школьный этап по математике и русскому языку официально опускается до 4 класса; муниципальный по-прежнему начинается с 7-го.","source":"https://vserosolimp.edsoo.ru/"}];
+    const STORAGE_KEY="olympiad-timeline-published-1789820192964";
+    const clone=value=>JSON.parse(JSON.stringify(value));
+    function loadEvents(){
+      try { const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(saved)&&saved.length?saved:clone(defaultEvents); }
+      catch(error) { return clone(defaultEvents); }
+    }
+    let events=loadEvents();
+    const timeline=document.querySelector("#timeline"), reset=document.querySelector("#reset"), form=document.querySelector("#editor-form"), status=document.querySelector("#editor-status");
+    const fields={lane:document.querySelector("#edit-lane"),year:document.querySelector("#edit-year"),date:document.querySelector("#edit-date"),label:document.querySelector("#edit-label"),title:document.querySelector("#edit-title"),source:document.querySelector("#edit-source"),text:document.querySelector("#edit-text")};
+    fields.lane.innerHTML=lanes.map(lane=>`<option value="${lane.id}">${lane.name}</option>`).join("");
+    let activeLane=null, activeEvent="leningrad-1934", editingId="leningrad-1934";
+    const x=year=>((Number(year)-START)/(END-START)*100).toFixed(6)+"%";
+    const rowHeight=()=>48;
+    const saveEvents=()=>{ try { localStorage.setItem(STORAGE_KEY,JSON.stringify(events)); } catch(error) {} };
+    const setStatus=message=>{ status.textContent=message; };
+    let layoutFrame=0;
+    function scheduleLayout(){ cancelAnimationFrame(layoutFrame); layoutFrame=requestAnimationFrame(resolveLabelCollisions); }
+    function resolveLabelCollisions(){
+      document.querySelectorAll(".lane-plot").forEach(plot=>{
+        const bounds=plot.getBoundingClientRect(), gap=7, trackStep=25, tracks=[];
+        const items=[...plot.querySelectorAll(".event")].map(mark=>{
+          const label=mark.querySelector(".event-label"), dot=mark.querySelector(".dot");
+          label.style.marginLeft="0px"; label.style.bottom="18px";
+          return {mark,label,dot,stack:Number(getComputedStyle(mark).getPropertyValue("--stack"))||0,x:dot.getBoundingClientRect().left+dot.getBoundingClientRect().width/2-bounds.left};
+        }).sort((a,b)=>a.x-b.x);
+        const baseBottom=18+Math.max(0,...items.map(item=>item.stack))*9;
+        items.forEach(item=>{
+          const labelBox=item.label.getBoundingClientRect();
+          const left=labelBox.left-bounds.left, right=labelBox.right-bounds.left;
+          let track=0;
+          for(;track<tracks.length;track+=1){
+            if(left>=tracks[track]+gap)break;
+          }
+          if(track===tracks.length)tracks.push(0);
+          tracks[track]=right;
+          item.label.style.bottom=baseBottom+track*trackStep+"px";
+        });
+        const height=items.length?54+(baseBottom-18)+Math.max(0,tracks.length-1)*trackStep:44;
+        plot.closest(".lane").style.setProperty("--row-h",height+"px");
+      });
+    }
+    function render(){
+      const axis=document.createElement("div"); axis.className="axis";
+      axis.innerHTML=`<div class="axis-label">Год</div><div class="axis-plot">${tickYears.map(year=>`<span class="axis-tick" style="--x:${x(year)}">${year}</span>`).join("")}</div>`;
+      timeline.replaceChildren(axis);
+      lanes.forEach(lane=>{
+        const row=document.createElement("div"); row.className="lane"+(activeLane&&activeLane!==lane.id?" is-muted":""); row.dataset.lane=lane.id; row.style.setProperty("--row-h",rowHeight(lane.id)+"px"); row.style.setProperty("--lane-color",lane.color);
+        const laneEvents=events.filter(event=>event.lane===lane.id).sort((a,b)=>Number(a.year)-Number(b.year));
+        const marks=laneEvents.map(event=>{
+          const stack=laneEvents.filter(item=>Number(item.year)===Number(event.year)).indexOf(event);
+          return `<button class="event ${event.edge?`edge-${event.edge}`:""} ${activeEvent===event.id?"is-selected":""}" type="button" data-event="${event.id}" style="--x:${x(event.year)};--stack:${stack};--event-color:${lane.color}" aria-label="${event.date}: ${event.title}" title="${event.date}: ${event.title}"><span class="event-label"><span class="event-year">${event.date}</span><br>${event.label}</span><span class="dot" aria-hidden="true"></span></button>`;
+        }).join("");
+        row.innerHTML=`<div class="lane-label-wrap"><button class="lane-label" type="button" data-lane-filter="${lane.id}" aria-pressed="${activeLane===lane.id}">${lane.name}</button></div><div class="lane-plot">${marks}</div>`;
+        timeline.append(row);
+      });
+      reset.classList.toggle("visible",Boolean(activeLane));
+      scheduleLayout();
+    }
+    function selectEvent(id){
+      const event=events.find(item=>item.id===id); if(!event)return; const lane=lanes.find(item=>item.id===event.lane); activeEvent=id;
+      document.querySelector("#detail").style.setProperty("--detail-color",lane.color); document.querySelector("#detail-year").textContent=event.date; document.querySelector("#detail-title").textContent=event.title; document.querySelector("#detail-text").textContent=event.text;
+      const source=document.querySelector("#detail-source"); source.href=event.source; source.hidden=!event.source;
+      document.querySelectorAll(".event").forEach(mark=>mark.classList.toggle("is-selected",mark.dataset.event===id)); history.replaceState(null,"",`#${id}`); fillForm(event); scheduleLayout();
+    }
+    function clearSelection(){
+      activeEvent=null;
+      document.querySelectorAll(".event").forEach(mark=>mark.classList.remove("is-selected"));
+      document.querySelector("#detail").style.removeProperty("--detail-color");
+      document.querySelector("#detail-year").textContent="—";
+      document.querySelector("#detail-title").textContent="Выберите событие";
+      document.querySelector("#detail-text").textContent="Нажмите на точку, чтобы увидеть подробности.";
+      document.querySelector("#detail-source").hidden=true;
+      history.replaceState(null,"",location.pathname+location.search);
+      scheduleLayout();
+    }
+    function clearNearest(){
+      document.querySelectorAll(".event.is-hovered").forEach(mark=>mark.classList.remove("is-hovered"));
+      document.querySelectorAll(".lane-plot.has-nearest").forEach(plot=>{ plot.classList.remove("has-nearest"); delete plot.dataset.nearestEvent; });
+    }
+    function updateNearest(pointer){
+      const plot=pointer.target.closest(".lane-plot");
+      clearNearest();
+      if(!plot||plot.closest(".lane").classList.contains("is-muted"))return;
+      let nearest=null, nearestDistance=Infinity;
+      plot.querySelectorAll(".event").forEach(mark=>{
+        const dot=mark.querySelector(".dot").getBoundingClientRect(), dx=pointer.clientX-(dot.left+dot.width/2), dy=pointer.clientY-(dot.top+dot.height/2), distance=Math.hypot(dx,dy);
+        if(distance<nearestDistance){ nearest=mark; nearestDistance=distance; }
+      });
+      if(nearest&&nearestDistance<=22){ nearest.classList.add("is-hovered"); plot.classList.add("has-nearest"); plot.dataset.nearestEvent=nearest.dataset.event; }
+    }
+    function fillForm(event){
+      editingId=event.id; fields.lane.value=event.lane; fields.year.value=event.year; fields.date.value=event.date; fields.label.value=event.label; fields.title.value=event.title; fields.source.value=event.source||""; fields.text.value=event.text; setStatus(`Редактируется: ${event.title}`);
+    }
+    function newEvent(){
+      editingId=null; form.reset(); fields.lane.value=activeLane||"math"; fields.year.value=new Date().getFullYear()>END?END:new Date().getFullYear(); fields.date.value=fields.year.value; setStatus("Новая точка: заполните поля и нажмите «Сохранить»."); fields.label.focus();
+    }
+    function normalizedFormEvent(){
+      const year=Number(fields.year.value);
+      if(year<START||year>END) throw new Error(`Год должен быть от ${START} до ${END}.`);
+      return {id:editingId||`custom-${Date.now()}`,lane:fields.lane.value,year,date:fields.date.value.trim(),label:fields.label.value.trim(),level:0,edge:year<=1935?"start":year>=2015?"end":undefined,title:fields.title.value.trim(),text:fields.text.value.trim(),source:fields.source.value.trim()};
+    }
+    timeline.addEventListener("pointermove",updateNearest);
+    timeline.addEventListener("pointerleave",clearNearest);
+    timeline.addEventListener("click",click=>{ const plot=click.target.closest(".lane-plot"), nearestId=plot?.dataset.nearestEvent, eventButton=click.target.closest("[data-event]"); if(nearestId&&click.detail!==0){selectEvent(nearestId);return} if(eventButton){selectEvent(eventButton.dataset.event);return} const laneButton=click.target.closest("[data-lane-filter]"); if(laneButton){activeLane=activeLane===laneButton.dataset.laneFilter?null:laneButton.dataset.laneFilter;render();return} if(plot){if(nearestId)selectEvent(nearestId);else clearSelection();} });
+    reset.addEventListener("click",()=>{activeLane=null;render()});
+    form.addEventListener("submit",event=>{ event.preventDefault(); try { const value=normalizedFormEvent(); const index=events.findIndex(item=>item.id===value.id); if(index>=0)events[index]=value;else events.push(value); saveEvents(); activeEvent=value.id; editingId=value.id; render(); selectEvent(value.id); setStatus("Точка сохранена в этом браузере."); } catch(error) { setStatus(error.message); } });
+    document.querySelector("#new-event").addEventListener("click",newEvent);
+    document.querySelector("#delete-event").addEventListener("click",()=>{ if(!editingId)return setStatus("Сначала выберите точку."); const item=events.find(event=>event.id===editingId); if(!item||!confirm(`Удалить точку «${item.title}»?`))return; events=events.filter(event=>event.id!==editingId); saveEvents(); activeEvent=events[0]?.id||null; editingId=null; render(); if(activeEvent)selectEvent(activeEvent); newEvent(); setStatus("Точка удалена."); });
+    document.querySelector("#export-html").addEventListener("click",()=>{
+      const exported=document.documentElement.cloneNode(true), editor=exported.querySelector("#editor"), exportedTimeline=exported.querySelector("#timeline");
+      if(editor)editor.hidden=true;
+      if(exportedTimeline)exportedTimeline.replaceChildren();
+      const bakedData=JSON.stringify(events).replace(/</g,"\\u003c").replace(/\u2028/g,"\\u2028").replace(/\u2029/g,"\\u2029");
+      let html="<!doctype html>\n"+exported.outerHTML;
+      const dataBlock=/const defaultEvents=\[[\s\S]*?\];\s*const STORAGE_KEY="[^"]+";/;
+      html=html.replace(dataBlock,()=>`const defaultEvents=${bakedData};\n    const STORAGE_KEY="olympiad-timeline-published-${Date.now()}";`);
+      const blob=new Blob([html],{type:"text/html;charset=utf-8"}), url=URL.createObjectURL(blob), link=document.createElement("a");
+      link.href=url; link.download="olympiad-timeline.html"; link.click(); URL.revokeObjectURL(url); setStatus("Готовый HTML скачан. Редактор в нём скрыт, текущие точки встроены в файл.");
+    });
+    document.querySelector("#export-events").addEventListener("click",()=>{ const blob=new Blob([JSON.stringify(events,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const link=document.createElement("a"); link.href=url; link.download="olympiad-timeline-data.json"; link.click(); URL.revokeObjectURL(url); setStatus("JSON-файл скачан."); });
+    document.querySelector("#import-events").addEventListener("change",async event=>{ const file=event.target.files[0]; if(!file)return; try { const imported=JSON.parse(await file.text()); if(!Array.isArray(imported)||!imported.length||imported.some(item=>!lanes.some(lane=>lane.id===item.lane)||Number(item.year)<START||Number(item.year)>END||!item.id||!item.title))throw new Error("Файл не похож на данные этого таймлайна."); events=imported; saveEvents(); activeEvent=events[0].id; render(); selectEvent(activeEvent); setStatus("Данные загружены из JSON."); } catch(error) { setStatus(error.message); } event.target.value=""; });
+    document.querySelector("#reset-events").addEventListener("click",()=>{ if(!confirm("Удалить локальные правки и вернуть исходные точки?"))return; events=clone(defaultEvents); saveEvents(); activeEvent="leningrad-1934"; activeLane=null; render(); selectEvent(activeEvent); setStatus("Исходные данные восстановлены."); });
+    new ResizeObserver(scheduleLayout).observe(document.querySelector(".module"));
+    render();
+    const hashEvent=decodeURIComponent(location.hash.slice(1)); if(events.some(event=>event.id===hashEvent))selectEvent(hashEvent);
+    else if(events.length)selectEvent(events.find(event=>event.id===activeEvent)?.id||events[0].id);
+  </script>
+
+
+</body></html>
