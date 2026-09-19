@@ -106,7 +106,7 @@ a:focus-visible {
 
 .page-shell {
   display: grid;
-  grid-template-columns: 10rem minmax(0, var(--text-width)) 10rem;
+  grid-template-columns: minmax(0, var(--text-width));
   gap: 2.5rem;
   justify-content: center;
   max-width: var(--page-width);
