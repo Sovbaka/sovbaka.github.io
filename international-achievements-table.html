@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Таблица международных достижений российских школьников</title>
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #fafaf7;
+      color: #222;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .olympiads {
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 52px 24px 64px;
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 0 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1.05;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+    }
+
+    .lead {
+      max-width: 700px;
+      margin: 0 0 24px;
+      font-size: 17px;
+      line-height: 1.5;
+      color: #666;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 0 0 22px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex: none;
+    }
+
+    .gold {
+      background: #c79a32;
+    }
+
+    .silver {
+      background: #aaa;
+    }
+
+    .bronze {
+      background: #a86f47;
+    }
+
+    .honour {
+      background: #ddd;
+      border: 1px solid #999;
+    }
+
+    .none {
+      background: transparent;
+      border: 1px solid #bbb;
+    }
+
+    .timeline-wrap {
+      overflow-x: auto;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .timeline {
+      min-width: 840px;
+      display: grid;
+      grid-template-columns:
+        130px
+        repeat(22, minmax(30px, 1fr));
+    }
+
+    .corner,
+    .year {
+      height: 38px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+    }
+
+    .corner {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #fff;
+      padding-left: 10px;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .year {
+      justify-content: center;
+      font-size: 10px;
+      color: #777;
+      border-left: 1px solid #f0f0ed;
+    }
+
+    .subject {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-height: 62px;
+      padding: 9px 10px;
+      background: #fff;
+      border-bottom: 1px solid #e6e6e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .subject-name {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      line-height: 1.1;
+    }
+
+    .subject-code {
+      margin-top: 2px;
+      font-size: 9px;
+      color: #999;
+    }
+
+    .subject-total {
+      margin-top: 4px;
+      font-size: 9px;
+      line-height: 1.2;
+      color: #666;
+    }
+
+    .result {
+      min-height: 62px;
+      padding: 5px 1px;
+      border-left: 1px solid #f0f0ed;
+      border-bottom: 1px solid #e6e6e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .medals {
+      max-width: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .cancelled {
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    .note {
+      max-width: 820px;
+      margin: 20px 0 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #777;
+    }
+
+    .sources {
+      max-width: 820px;
+      margin-top: 20px;
+      font-size: 11px;
+      line-height: 1.55;
+      color: #888;
+    }
+
+    .sources a {
+      color: inherit;
+      text-underline-offset: 2px;
+    }
+
+    @media (max-width: 700px) {
+      .olympiads {
+        padding: 40px 14px 54px;
+      }
+
+      .timeline {
+        min-width: 800px;
+        grid-template-columns:
+          120px
+          repeat(22, 30px);
+      }
+
+      .subject {
+        padding-left: 8px;
+      }
+
+      .subject-name {
+        font-size: 14px;
+      }
+    }
+  
+
+    .olympiads {
+      max-width: none;
+      padding: 16px;
+    }
+
+    .legend {
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .olympiads {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="olympiads" aria-label="Результаты российских команд на международных олимпиадах">
+  <div class="legend">
+
+    <div class="legend-item">
+      <span class="dot gold"></span>
+      золото
+    </div>
+
+    <div class="legend-item">
+      <span class="dot silver"></span>
+      серебро
+    </div>
+
+    <div class="legend-item">
+      <span class="dot bronze"></span>
+      бронза
+    </div>
+
+    <div class="legend-item">
+      <span class="dot honour"></span>
+      почётное упоминание
+    </div>
+
+    <div class="legend-item">
+      <span class="dot none"></span>
+      без медали
+    </div>
+
+  </div>
+  <div class="timeline-wrap">
+    <div class="timeline" id="timeline"></div>
+  </div>
+  </main>
+  <script>
+  const years = [
+    2000, 2001, 2002, 2003, 2004, 2005,
+    2006, 2007, 2008, 2009, 2010, 2011,
+    2012, 2013, 2014, 2015, 2016, 2017,
+    2018, 2019, 2020, 2021
+  ];
+
+  /*
+    G = gold
+    S = silver
+    B = bronze
+    H = honourable mention
+    N = no medal
+    - = olympiad not held
+  */
+
+  const olympiads = [
+
+    {
+      name: "Математика",
+      code: "IMO",
+      summary: "82 золота · 132 медали из 132",
+      results: [
+        "GGGGGS",
+        "GGGGGS",
+        "GGGGGG",
+        "GGGSSB",
+        "GGGGSB",
+        "GGGGSS",
+        "GGGSSS",
+        "GGGGGS",
+        "GGGGGG",
+        "GGGGGS",
+        "GGGGSS",
+        "GGSSSS",
+        "GGGGSS",
+        "GGGGSS",
+        "GGGSSS",
+        "SSSSSS",
+        "GGGGSB",
+        "GSSSBB",
+        "GGGGGS",
+        "GGSSSS",
+        "GGSSSS",
+        "GGGGGS"
+      ]
+    },
+
+    {
+      name: "Физика",
+      code: "IPhO",
+      summary: "62 золота · 102 медали",
+      results: [
+        "GGSSB",
+        "GGGS",
+        "GGGSS",
+        "GSSBH",
+        "SSSSB",
+        "GGGGS",
+        "GGSSS",
+        "GGGSH",
+        "GGGSB",
+        "GGGSS",
+        "GSSSB",
+        "GSSSB",
+        "GGGSS",
+        "GGGGS",
+        "GGGSS",
+        "GGGGS",
+        "GGGGS",
+        "GGGGG",
+        "GGGGS",
+        "GGGGS",
+        "-",
+        "GGGGG"
+      ]
+    },
+
+    {
+      name: "Химия",
+      code: "IChO",
+      summary: "56 золотых · 88 медалей из 88",
+      results: [
+        "GGGG",
+        "GGGS",
+        "GSSB",
+        "GSSS",
+        "GSSB",
+        "GGSS",
+        "GGGS",
+        "GGGG",
+        "GGGG",
+        "GGGS",
+        "GSSB",
+        "GGGS",
+        "GGGS",
+        "GGSS",
+        "GGGS",
+        "GGSS",
+        "GGGS",
+        "GGSS",
+        "GGSS",
+        "GGGG",
+        "GSSS",
+        "GGGG"
+      ]
+    },
+
+    {
+      name: "Информатика",
+      code: "IOI",
+      summary: "54 золота · 88 медалей из 88",
+      results: [
+        "GGGG",
+        "GSSB",
+        "GGSS",
+        "GSBB",
+        "GGGG",
+        "GSSB",
+        "GGGB",
+        "GGGS",
+        "GGSS",
+        "GSSS",
+        "GGSS",
+        "GGSS",
+        "GGGG",
+        "GGGS",
+        "GGSS",
+        "GGGS",
+        "GGGS",
+        "GSSS",
+        "GGSS",
+        "GGGG",
+        "GGGS",
+        "GGGS"
+      ]
+    },
+
+    {
+      name: "Биология",
+      code: "IBO",
+      summary: "26 золотых · 85 медалей из 88",
+      results: [
+        "GGSB",
+        "SSSB",
+        "GSSS",
+        "GGGS",
+        "SSBB",
+        "GSSS",
+        "SSBB",
+        "SBNN",
+        "SBBB",
+        "GSBN",
+        "SSSB",
+        "SBBB",
+        "GGSS",
+        "GGSS",
+        "GSSS",
+        "GGSB",
+        "GSSB",
+        "GGSB",
+        "GGGS",
+        "SSSB",
+        "GGGS",
+        "GGSS"
+      ]
+    }
+
+  ];
+
+
+  const classByMedal = {
+    G: "gold",
+    S: "silver",
+    B: "bronze",
+    H: "honour",
+    N: "none"
+  };
+
+  const nameByMedal = {
+    G: "золото",
+    S: "серебро",
+    B: "бронза",
+    H: "почётное упоминание",
+    N: "без медали"
+  };
+
+
+  const timeline = document.getElementById("timeline");
+
+
+  // Левая верхняя ячейка
+  const corner = document.createElement("div");
+  corner.className = "corner";
+  corner.textContent = "сборная";
+  timeline.appendChild(corner);
+
+
+  // Годы
+  years.forEach(year => {
+    const cell = document.createElement("div");
+    cell.className = "year";
+
+    // '00, '01, ... '21
+    cell.textContent = "'" + String(year).slice(2);
+    cell.title = year;
+
+    timeline.appendChild(cell);
+  });
+
+
+  // Строки по предметам
+  olympiads.forEach(olympiad => {
+
+    const subject = document.createElement("div");
+    subject.className = "subject";
+
+    subject.innerHTML = `
+      <div class="subject-name">${olympiad.name}</div>
+      <div class="subject-code">${olympiad.code}</div>
+      <div class="subject-total">${olympiad.summary}</div>
+    `;
+
+    timeline.appendChild(subject);
+
+
+    olympiad.results.forEach((result, index) => {
+
+      const cell = document.createElement("div");
+      cell.className = "result";
+
+      if (result === "-") {
+
+        cell.innerHTML = `<span class="cancelled">—</span>`;
+        cell.title = `${years[index]}: олимпиада не проводилась`;
+
+      } else {
+
+        const medals = document.createElement("div");
+        medals.className = "medals";
+
+        const descriptions = [];
+
+        [...result].forEach(type => {
+
+          const dot = document.createElement("span");
+          dot.className = `dot ${classByMedal[type]}`;
+
+          medals.appendChild(dot);
+          descriptions.push(nameByMedal[type]);
+
+        });
+
+        cell.appendChild(medals);
+
+        cell.title =
+          `${olympiad.name}, ${years[index]}: ` +
+          descriptions.join(", ");
+      }
+
+      timeline.appendChild(cell);
+    });
+
+  });
+</script>
+</body>
+</html>
