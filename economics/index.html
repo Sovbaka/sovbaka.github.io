@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="127 заданий заключительных этапов олимпиад по экономике: Финашка, РАНХиГС, СПбГУ и Плехановская. Темы, годы и ссылки на страницы задач и решений в PDF.">
+  <title>Экономика · заключительные этапы</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#sections">К задачам</a>
+  <header class="hero" id="top">
+    <div class="wrap">
+      <p class="eyebrow">Олимпиадная экономика · заключительный этап</p>
+      <div class="title-row"><h1>Задачи по темам</h1><span class="total" id="totalCount"></span></div>
+      <p class="intro">Финашка, РАНХиГС, СПбГУ и Плехановская. Один вариант каждого года — со ссылками на страницы задач и доступные решения.</p>
+      <div class="olympiad-tabs" id="olympiadFilters" role="group" aria-label="Олимпиада"></div>
+      <div id="yearFilters" class="year-filters" role="group" aria-label="Учебный год"></div>
+      <div class="tools">
+        <div class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Поиск задач" placeholder="Найти задачу, понятие или модель…" autocomplete="off"></div>
+        <select id="topicFilter" aria-label="Тема"><option value="all">Все темы</option></select>
+        <label class="solution-filter"><input type="checkbox" id="withSolution"> С материалами к решению</label>
+        <label class="solution-filter"><input type="checkbox" id="onlyQualitative"> Только K</label>
+      </div>
+      <p class="qualitative-legend"><span class="qualitative-badge" aria-hidden="true">K</span> — качественная задача: рассуждения без формул и расчётов. Если нужен поясняющий график, это указано в карточке.</p>
+      <nav id="categoryNav" class="category-nav" aria-label="Переход к теме"></nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="catalog-bar"><p id="resultCount" role="status" aria-live="polite"></p><button class="text-button" id="resetFilters" hidden>Сбросить фильтры</button></div>
+    <div id="sections"></div>
+    <div id="emptyState" class="empty-state" hidden><h2>Ничего не найдено</h2><p>Попробуйте другое слово или сбросьте фильтры.</p><button class="filter-btn" id="resetEmpty">Показать все задачи</button></div>
+    <details class="sources" id="sources">
+      <summary>Источники и выбранные варианты <span id="sourceCount">23 сборника</span></summary>
+      <div class="sources-content">
+        <p>Каждая карточка ведёт на страницу исходного PDF. Номер страницы в карточке — номер в PDF, он может отличаться от напечатанного. В исходных сборниках остаются другие варианты; в каталог включён только указанный ниже.</p>
+        <p>Ссылки ведут на страницы материалов к каждой задаче: «решение» — заполненный разбор, «ответ» — числовой ответ, «критерии» — правила оценки. Если отдельного файла с заданиями нет, условие и решение открываются в одном PDF. Пустые таблицы не считаются готовым разбором. Короткие названия и тематическая разбивка добавлены для навигации.</p>
+        <div class="table-scroll"><table><thead><tr><th scope="col">Олимпиада / год</th><th scope="col">Выбранный вариант</th><th scope="col">Задания</th><th scope="col">Страницы заданий</th><th scope="col">Материалы к решению</th></tr></thead><tbody id="sourceRows"></tbody></table></div>
+        <div id="sourceNotes"></div>
+      </div>
+    </details>
+  </main>
+  <footer class="wrap"><p>Экономика · заключительные этапы · 2019–2026</p><a href="#top">Наверх ↑</a></footer>
+  <noscript><p class="wrap">Для фильтров и карточек включите JavaScript. Все исходные файлы находятся в папке pdfs.</p></noscript>
+  <script src="tasks.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
